@@ -28,6 +28,42 @@
                 <input type="text" id="tickerInput" class="stock-search" placeholder="Stock search..." />
                 <button id="analyzeBtn" class="search-btn">Search</button>
                 <button id="downloadPdfBtn" class="pdf-btn hidden">Download PDF</button>
+                <button id="settingsBtn" class="settings-btn">⚙️ Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="modal-close" id="closeSettings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>OpenAI API Configuration</h3>
+                    <p class="settings-description">Enter your OpenAI API key to enable AI-powered insights. Your key is stored locally in your browser.</p>
+                    <div class="form-group">
+                        <label for="apiKeyInput">API Key</label>
+                        <input type="password" id="apiKeyInput" class="form-control" placeholder="sk-proj-...">
+                        <button id="toggleApiKey" class="toggle-visibility">👁️ Show</button>
+                    </div>
+                    <div class="form-actions">
+                        <button id="saveApiKey" class="btn-primary">Save API Key</button>
+                        <button id="clearApiKey" class="btn-secondary">Clear API Key</button>
+                    </div>
+                    <p class="api-status" id="apiStatus"></p>
+                    <div class="settings-help">
+                        <p><strong>How to get an API key:</strong></p>
+                        <ol>
+                            <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI API Keys</a></li>
+                            <li>Sign in or create an account</li>
+                            <li>Click "Create new secret key"</li>
+                            <li>Copy the key and paste it above</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

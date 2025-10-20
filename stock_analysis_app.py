@@ -429,6 +429,13 @@ def ai_insights():
         if not ticker or not analysis:
             return jsonify({'success': False, 'error': 'Missing ticker or analysis data'}), 400
 
+        # Get API key from header or fallback to environment variable
+        api_key = request.headers.get('X-API-Key') or os.environ.get('OPENAI_API_KEY', 'your-api-key-here')
+
+        # Create OpenAI client with the provided API key
+        from openai import OpenAI
+        ai_client = OpenAI(api_key=api_key)
+
         # Prepare summary data for AI
         company_info = analysis.get('company_info', {})
         market_data = analysis.get('market_data', {})
@@ -482,7 +489,7 @@ Please provide a detailed analysis covering:
 Format the response in clear sections with bullet points where appropriate."""
 
         # Call OpenAI API
-        response = client.chat.completions.create(
+        response = ai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a financial analyst providing investment insights based on fundamental stock data. Be objective, balanced, and highlight both positives and risks. Format your response using HTML tags like <h3> for sections and <ul><li> for bullet points."},

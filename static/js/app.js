@@ -5,9 +5,67 @@ document.addEventListener('DOMContentLoaded', function() {
     const tickerInput = document.getElementById('tickerInput');
     const analyzeBtn = document.getElementById('analyzeBtn');
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettings = document.getElementById('closeSettings');
+    const saveApiKey = document.getElementById('saveApiKey');
+    const clearApiKey = document.getElementById('clearApiKey');
+    const toggleApiKey = document.getElementById('toggleApiKey');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const apiStatus = document.getElementById('apiStatus');
 
     analyzeBtn.addEventListener('click', analyzeTicker);
     downloadPdfBtn.addEventListener('click', downloadPDF);
+    settingsBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('hidden');
+        loadApiKey();
+    });
+    closeSettings.addEventListener('click', () => settingsModal.classList.add('hidden'));
+
+    // Close modal when clicking outside
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            settingsModal.classList.add('hidden');
+        }
+    });
+
+    // Toggle API key visibility
+    toggleApiKey.addEventListener('click', () => {
+        if (apiKeyInput.type === 'password') {
+            apiKeyInput.type = 'text';
+            toggleApiKey.textContent = '🙈 Hide';
+        } else {
+            apiKeyInput.type = 'password';
+            toggleApiKey.textContent = '👁️ Show';
+        }
+    });
+
+    // Save API key
+    saveApiKey.addEventListener('click', () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+            showApiStatus('Please enter an API key', 'error');
+            return;
+        }
+        if (!apiKey.startsWith('sk-')) {
+            showApiStatus('Invalid API key format. OpenAI keys start with "sk-"', 'error');
+            return;
+        }
+        localStorage.setItem('openai_api_key', apiKey);
+        showApiStatus('✓ API key saved successfully!', 'success');
+        setTimeout(() => {
+            settingsModal.classList.add('hidden');
+        }, 1500);
+    });
+
+    // Clear API key
+    clearApiKey.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear your API key?')) {
+            localStorage.removeItem('openai_api_key');
+            apiKeyInput.value = '';
+            showApiStatus('API key cleared', 'success');
+        }
+    });
 
     tickerInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -36,6 +94,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load market movers
     loadMarketMovers();
 });
+
+function loadApiKey() {
+    const apiKey = localStorage.getItem('openai_api_key');
+    if (apiKey) {
+        document.getElementById('apiKeyInput').value = apiKey;
+        showApiStatus('API key loaded from browser storage', 'success');
+    } else {
+        document.getElementById('apiKeyInput').value = '';
+        document.getElementById('apiStatus').textContent = '';
+    }
+}
+
+function showApiStatus(message, type) {
+    const apiStatus = document.getElementById('apiStatus');
+    apiStatus.textContent = message;
+    apiStatus.className = `api-status ${type}`;
+    setTimeout(() => {
+        if (type === 'error') {
+            apiStatus.textContent = '';
+        }
+    }, 5000);
+}
 
 async function analyzeTicker() {
     const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
@@ -916,6 +996,22 @@ async function loadAIInsights(data) {
     if (aiInsightsLoaded) return;
 
     const contentDiv = document.getElementById('aiInsightsContent');
+
+    // Check if API key is available
+    const apiKey = localStorage.getItem('openai_api_key');
+    if (!apiKey) {
+        contentDiv.innerHTML = `
+            <div class="ai-insights-error">
+                <h3>⚠️ OpenAI API Key Required</h3>
+                <p>To use AI-powered insights, please configure your OpenAI API key in Settings.</p>
+                <button onclick="document.getElementById('settingsBtn').click()" class="btn-primary" style="margin-top: 16px;">
+                    Open Settings
+                </button>
+            </div>
+        `;
+        return;
+    }
+
     contentDiv.innerHTML = `
         <div class="ai-loading">
             <div class="spinner"></div>
@@ -928,6 +1024,7 @@ async function loadAIInsights(data) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-API-Key': apiKey
             },
             body: JSON.stringify({
                 ticker: data.ticker,
@@ -941,10 +1038,23 @@ async function loadAIInsights(data) {
             contentDiv.innerHTML = `<div class="ai-insights-text">${result.insights}</div>`;
             aiInsightsLoaded = true;
         } else {
-            contentDiv.innerHTML = `<div class="error">Failed to generate AI insights: ${result.error || 'Unknown error'}</div>`;
+            contentDiv.innerHTML = `
+                <div class="ai-insights-error">
+                    <h3>❌ Failed to Generate AI Insights</h3>
+                    <p>${result.error || 'Unknown error'}</p>
+                    ${result.error && result.error.includes('API key') ?
+                        '<button onclick="document.getElementById(\'settingsBtn\').click()" class="btn-primary" style="margin-top: 16px;">Update API Key</button>' :
+                        ''}
+                </div>
+            `;
         }
     } catch (error) {
-        contentDiv.innerHTML = `<div class="error">Network error: ${error.message}</div>`;
+        contentDiv.innerHTML = `
+            <div class="ai-insights-error">
+                <h3>❌ Network Error</h3>
+                <p>${error.message}</p>
+            </div>
+        `;
     }
 }
 
