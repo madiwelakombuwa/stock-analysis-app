@@ -1,0 +1,11 @@
+{
+  "name": "stock-analysis-app",
+  "version": "1.0.0",
+  "description": "Stock Analysis App with 8 Commandments Framework",
+  "scripts": {
+    "build": "echo 'No build needed - static files ready in public/' && exit 0"
+  },
+  "keywords": ["stock-analysis", "finance", "cloudflare-pages"],
+  "author": "",
+  "license": "MIT"
+}
