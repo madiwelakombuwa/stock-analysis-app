@@ -55,22 +55,3 @@ QUICKSTART.md
 STATUS.md
 USE_YOUR_CHROME.md
 test_marketing.xlsx
-
-# Cloudflare
-.wrangler/
-.dev.vars
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Node modules
-node_modules/
-
-# Temporary files
-*.tmp
-temp/
-
-# Build output
-dist/
